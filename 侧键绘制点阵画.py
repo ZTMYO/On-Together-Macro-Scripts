@@ -119,11 +119,17 @@ def on_key_press(key):
         if (hasattr(key, "char") and key.char in ("p", "P")) or (hasattr(key, "vk") and key.vk == 80):
             macro_stop_event.set()
             return
+
+        # '-' 键作为上侧键(X2)的替代触发
+        if hasattr(key, "char") and key.char == "-":
+            t = threading.Thread(target=handle_side_button_click, daemon=True)
+            t.start()
+            return
     except Exception as e:
         print(f"键盘监听异常: {e}")
 
 def main():
-    print("脚本启动 🚀 | 侧键(X2)开始绘制 | P键暂停 | Ctrl+C退出")
+    print("脚本启动 🚀 | 侧键(X2)或 '-' 键开始绘制 | P键暂停 | Ctrl+C退出")
     # 启动鼠标监听和键盘监听
     mouse_listener = mouse.Listener(on_click=on_click)
     keyboard_listener = keyboard.Listener(on_press=on_key_press)

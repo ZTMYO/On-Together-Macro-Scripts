@@ -34,7 +34,7 @@ def draw_circle(center_x, center_y):
     
     # 结束绘制
     mouse_controller.release(mouse.Button.left)
-    print("圆形绘制完成 ✅")
+    print("圆形绘制完成 ")
 
 def handle_draw():
     macro_stop_event.clear()
@@ -57,11 +57,16 @@ def on_key_press(key):
         if (hasattr(key, "char") and key.char in ("p", "P")) or (hasattr(key, "vk") and key.vk == 80):
             macro_stop_event.set()
             return
+
+        # '-' 键作为上侧键(X2)的替代触发
+        if hasattr(key, "char") and key.char == "-":
+            threading.Thread(target=handle_draw, daemon=True).start()
+            return
     except Exception as e:
         print(f"键盘监听异常: {e}")
 
 # 主程序
-print("侧键绘圆脚本启动 🚀 | 侧键(X2)绘制圆形 | P键暂停 | Ctrl+C退出")
+print("侧键绘圆脚本启动 | 侧键(X2)或 '-' 键绘制圆形 | P键暂停 | Ctrl+C退出")
 mouse_listener = mouse.Listener(on_click=on_click)
 keyboard_listener = keyboard.Listener(on_press=on_key_press)
 

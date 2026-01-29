@@ -13,15 +13,15 @@ last_grid_top_left = None
 macro_stop_event = threading.Event()
 
 SUDOKU_PUZZLE =[
- [2, 5, 0, 0, 0, 8, 9, 0, 0],
- [0, 3, 1, 5, 7, 0, 8, 0, 0],
- [0, 7, 0, 0, 0, 6, 0, 0, 3],
- [0, 8, 0, 0, 6, 0, 4, 0, 7],
- [6, 0, 0, 8, 0, 5, 0, 0, 1],
- [3, 0, 5, 0, 1, 0, 0, 9, 0],
- [5, 0, 0, 4, 0, 0, 0, 2, 0],
- [0, 0, 9, 0, 2, 7, 3, 4, 0],
- [0, 0, 4, 3, 0, 0, 0, 8, 6]
+[0,9,0,4,1,0,2,0,0],
+[3,0,0,2,0,0,0,7,8],
+[4,2,5,0,0,6,0,0,0],
+[2,0,0,0,6,0,7,4,0],
+[5,0,0,3,0,1,0,0,9],
+[0,6,1,0,2,0,0,0,5],
+[0,0,0,8,0,0,9,6,7],
+[6,8,0,0,0,7,0,0,4],
+[0,0,4,0,3,5,0,1,0]
 ]
 
 def draw_line(x1, y1, x2, y2, hold_time=0.02):
@@ -246,7 +246,7 @@ def draw_digit_in_current_cell(digit):
 
 def fill_all_cells_from_puzzle():
     if last_grid_top_left is None:
-        print("尚未绘制网格，无法一键填充，请先按侧键画网格。")
+        print("尚未绘制网格，无法一键填充，请先绘制网格。")
         return
 
     grid_x, grid_y = last_grid_top_left
@@ -285,6 +285,18 @@ def on_key_press(key):
             macro_stop_event.set()
             return
 
+        # '-' 键：替代上侧键(X2)触发绘制网格
+        if hasattr(key, "char") and key.char == "-":
+            t = threading.Thread(target=handle_side_button_click, daemon=True)
+            t.start()
+            return
+
+        # '=' 键：替代下侧键(X1)触发绘制数独粗分隔线
+        if hasattr(key, "char") and key.char == "=":
+            t = threading.Thread(target=handle_sudoku_button_click, daemon=True)
+            t.start()
+            return
+
         if (hasattr(key, "char") and key.char == "0") or (hasattr(key, "vk") and key.vk == 96):
             macro_stop_event.clear()
             t = threading.Thread(target=fill_all_cells_from_puzzle, daemon=True)
@@ -312,8 +324,8 @@ def main():
     print("侧键绘制网格脚本已启动")
     print("1. 先选择画笔工具")
     print("2. 鼠标移动到网格左上角位置")
-    print("3. 按下鼠标上侧键，自动绘制 9x9 网格")
-    print("4. 换成其他颜色笔刷后，按下另下侧键绘制数独粗分隔线")
+    print("3. 按下鼠标上侧键或 '-' 键，自动绘制 9x9 网格")
+    print("4. 换成其他颜色笔刷后，按下鼠标下侧键或 '=' 键绘制数独粗分隔线")
     print("5. 按小键盘0将开始填入预设的数字")
     print("6. 鼠标放在格子中按小键盘1-9可以往该格填入相应数字")
     print("按P键暂停绘制")
