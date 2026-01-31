@@ -65,15 +65,15 @@ def draw_pixel(cx, cy, size):
     """绘制一个像素点：移动到中心，点击一下"""
     # 移动到像素中心
     mouse_controller.position = (cx, cy)
-    time.sleep(0.01)
+    time.sleep(0.02)
 
     # 按下左键
     mouse_controller.press(mouse.Button.left)
-    time.sleep(0.01)
+    time.sleep(0.02)
 
     # 松开左键
     mouse_controller.release(mouse.Button.left)
-    time.sleep(0.01)
+    time.sleep(0.02)
 
 def draw_pattern():
     if last_grid_top_left is None:
