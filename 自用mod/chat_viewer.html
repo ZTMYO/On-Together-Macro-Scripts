@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>聊天记录查看器</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #ffffff;
+      --fg: #111111;
+      --fg-soft: #666666;
+      --border: #e0e0e0;
+      --accent: #000000;
+      --system-bg: #f7f7f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 16px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100vh;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    header h1 {
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    header .subtle {
+      font-size: 12px;
+      color: var(--fg-soft);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    #load-dir {
+      background: #212121;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+
+    #load-dir:hover {
+      background: #000000;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    input[type="file"] {
+      font-size: 12px;
+    }
+
+    .meta {
+      font-size: 12px;
+      color: var(--fg-soft);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .tag {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .log-container {
+      flex: 1 1 auto;
+      min-height: 0;
+      margin-top: 4px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .log-header {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fafafa;
+    }
+
+    .log-header span {
+      color: var(--fg-soft);
+    }
+
+    .log-scroll {
+      flex: 1 1 auto;
+      overflow: auto;
+      padding: 8px 0;
+      background: #fff;
+    }
+
+    .line {
+      display: grid;
+      grid-template-columns: auto 120px minmax(0, 1fr);
+      column-gap: 12px;
+      padding: 3px 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .line:nth-child(2n) {
+      background: #fafafa;
+    }
+
+    .line:last-child {
+      border-bottom: none;
+    }
+
+    .time {
+      color: var(--fg-soft);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .channel {
+      display: none;
+    }
+
+    .name-col {
+      font-weight: 500;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .system-name {
+      font-weight: 500;
+      font-style: italic;
+    }
+
+    .content {
+      font-size: 12px;
+    }
+
+    .channel-chip {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fg-soft);
+    }
+
+    .system-row {
+      background: var(--system-bg);
+    }
+
+    .system .content {
+      color: #333333;
+    }
+
+    .error {
+      color: #b00020;
+      font-size: 12px;
+      padding: 4px 0 0;
+    }
+
+    .stats {
+      font-size: 11px;
+      color: var(--fg-soft);
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: 8px 8px 16px;
+      }
+
+      .line {
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        row-gap: 2px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <h1>Chat Log Viewer</h1>
+      <div class="controls">
+        <button id="load-dir">加载日志目录</button>
+        <select id="file-select" style="display: none;">
+          <option value="">选择文件</option>
+        </select>
+        <div class="meta">
+          <span id="file-name">未加载文件</span>
+        </div>
+      </div>
+      <div id="error" class="error" style="display: none;"></div>
+    </header>
+
+    <div class="log-container">
+      <div class="log-header">
+        <span>聊天记录</span>
+        <span class="stats" id="stats">0 条消息</span>
+      </div>
+      <div id="log" class="log-scroll" aria-label="聊天记录"></div>
+    </div>
+  </div>
+
+  <script>
+    const loadDirBtn = document.getElementById('load-dir');
+    const fileSelect = document.getElementById('file-select');
+    const fileNameEl = document.getElementById('file-name');
+    const errorEl = document.getElementById('error');
+    const logEl = document.getElementById('log');
+    const statsEl = document.getElementById('stats');
+
+    let selectedFiles = null;
+
+    function clearView() {
+      logEl.innerHTML = '';
+      statsEl.textContent = '0 条消息';
+      errorEl.style.display = 'none';
+      errorEl.textContent = '';
+    }
+
+    function loadFile(file) {
+      fileNameEl.textContent = file.name;
+      clearView();
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          renderLog(String(e.target.result || ''));
+        } catch (err) {
+          console.error(err);
+          errorEl.style.display = 'block';
+          errorEl.textContent = '解析文件时出错。';
+        }
+      };
+      reader.onerror = () => {
+        errorEl.style.display = 'block';
+        errorEl.textContent = '无法读取文件。';
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    function stripTags(raw) {
+      if (!raw) return '';
+      // 移除简单的 <color=...>, </color>, <b>, </b> 等伪标记
+      return raw
+        .replace(/<#[0-9a-fA-F]{3,8}>/g, '')
+        .replace(/<\/?color[^>]*>/gi, '')
+        .replace(/<\/?b>/gi, '')
+        .replace(/<\/?i>/gi, '')
+        .replace(/<\/?u>/gi, '')
+        .trim();
+    }
+
+    function renderRichText(raw) {
+      if (!raw) return '';
+      return raw
+        .replace(/<color=([^>]+)>/gi, '<span style="color: $1">')
+        .replace(/<\/color>/gi, '</span>')
+        .replace(/<b>/gi, '<strong>')
+        .replace(/<\/b>/gi, '</strong>')
+        .replace(/<i>/gi, '<em>')
+        .replace(/<\/i>/gi, '</em>')
+        .replace(/<u>/gi, '<u>')
+        .replace(/<\/u>/gi, '</u>');
+    }
+
+    function extractColor(raw) {
+      if (!raw) return '';
+      // 尝试从 <color=#xxxxxx> 中抓第一个颜色码
+      const m = raw.match(/<color=([^>]+)>/i);
+      if (!m) return '';
+      const v = m[1].trim();
+      // 只允许类似 #RRGGBB / #RRGGBBAA 这类
+      if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v;
+      return '';
+    }
+
+    function parseLine(line) {
+      // 去掉前面的行号 "  1→" 这种（如果存在）
+      const arrowIdx = line.indexOf('\u2192'); // "→"
+      if (arrowIdx !== -1) {
+        line = line.slice(arrowIdx + 1).trimStart();
+      }
+
+      // 标准格式: [时间][频道][昵称] 内容
+      const regex = /^\s*\[([^\]]+)\]\[([^\]]*)\]\[([^\]]*)\]\s*(.*)$/;
+      const match = line.match(regex);
+      if (!match) return null;
+
+      const [, time, channelRaw, nameRaw, contentRaw] = match;
+      const channel = channelRaw.trim();
+      const nameColor = extractColor(nameRaw);
+      const name = stripTags(nameRaw.replace(/^\[|\]$/g, '')); // 处理 [[System]] 之类
+      const nameHtml = renderRichText(nameRaw.replace(/^\[|\]$/g, ''));
+      const content = renderRichText(contentRaw || '').replace(/^\s*\]*/, '').trim();
+
+      return {
+        time: time.trim(),
+        channel: channel || '',
+        name: name || '',
+        nameColor: nameColor || '',
+        nameHtml: nameHtml,
+        content: content,
+      };
+    }
+
+    function createLineElement(msg) {
+      const line = document.createElement('div');
+      const isSystem = msg.channel.toLowerCase() === 'system' || msg.name.toLowerCase() === 'system';
+
+      line.className = 'line' + (isSystem ? ' system-row' : '');
+
+      const timeEl = document.createElement('div');
+      timeEl.className = 'time';
+      timeEl.textContent = msg.time;
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'name-col' + (isSystem ? ' system-name' : '');
+      const displayName = isSystem ? 'System' : msg.nameHtml;
+      nameEl.innerHTML = displayName;
+
+      const contentEl = document.createElement('div');
+      contentEl.className = 'content';
+
+      if (isSystem && msg.name && msg.nameColor && msg.content && msg.content.startsWith(msg.name)) {
+        // 系统行：内容以玩家名开头，例如 "石榴 已加入服务器！"
+        const nameSpan = document.createElement('span');
+        nameSpan.innerHTML = msg.nameHtml;
+
+        const restText = msg.content.slice(msg.name.length);
+
+        contentEl.appendChild(nameSpan);
+        if (restText) {
+          contentEl.append(restText);
+        }
+      } else {
+        // 普通行：整段作为纯文本
+        contentEl.innerHTML = msg.content;
+      }
+
+      line.appendChild(timeEl);
+      line.appendChild(nameEl);
+      line.appendChild(contentEl);
+
+      return line;
+    }
+
+    function renderLog(text) {
+      clearView();
+
+      const lines = text.split(/\r?\n/);
+      const messages = [];
+
+      for (const raw of lines) {
+        const line = raw.trimEnd();
+        if (!line) continue;
+        const parsed = parseLine(line);
+        if (!parsed) continue;
+        messages.push(parsed);
+      }
+
+      if (!messages.length) {
+        errorEl.style.display = 'block';
+        errorEl.textContent = '未能从文件中解析出符合格式的聊天记录。请确认文件为类似 [时间][频道][昵称] 内容 的每行格式。';
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      for (const msg of messages) {
+        frag.appendChild(createLineElement(msg));
+      }
+
+      logEl.appendChild(frag);
+      statsEl.textContent = messages.length + ' 条消息';
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    loadDirBtn.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.webkitdirectory = true;
+      input.multiple = true;
+      input.onchange = (e) => {
+        selectedFiles = Array.from(e.target.files).filter(f => f.name.endsWith('.log') || f.name.endsWith('.txt')).sort((a, b) => a.name.localeCompare(b.name));
+        fileSelect.innerHTML = '<option value="">选择文件</option>';
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const option = document.createElement('option');
+          option.value = i;
+          option.textContent = selectedFiles[i].name;
+          fileSelect.appendChild(option);
+        }
+        fileSelect.style.display = 'block';
+        fileNameEl.textContent = `已加载 ${selectedFiles.length} 个文件`;
+        clearView();
+        if (selectedFiles.length > 0) {
+          fileSelect.value = '0';
+          fileSelect.dispatchEvent(new Event('change'));
+        }
+      };
+      input.click();
+    });
+
+    fileSelect.addEventListener('change', (event) => {
+      const index = event.target.value;
+      if (index === '' || !selectedFiles) {
+        fileNameEl.textContent = `已选择 ${selectedFiles ? selectedFiles.length : 0} 个文件`;
+        clearView();
+        return;
+      }
+
+      const file = selectedFiles[parseInt(index)];
+      loadFile(file);
+    });
+  </script>
+</body>
+
+</html>
