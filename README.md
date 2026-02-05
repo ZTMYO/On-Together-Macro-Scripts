@@ -1,6 +1,6 @@
-# On-Together Macro Scripts
+# On-Together Macro
 这个仓库包含为“On-Together”游戏设计的宏脚本。这些脚本使用Python的`pynput`库监听鼠标和键盘事件，实现自动化绘制、连点等功能，帮助玩家在游戏中快速完成某些操作。
-
+> 本项目仅供学习使用，无商业用途。
 ## 效果图
 
 ![游戏中黑板画图效果图](img.png)
@@ -43,6 +43,41 @@ pip install pynput
 
 欢迎提交问题或改进建议。
 
-## 许可证
+---
 
-本项目仅供学习使用，无商业用途。
+## 自用 mod 说明 
+以下模组位于 `自用mod/` 目录，供个人使用与测试。请在使用前了解模组功能并遵守游戏规则。
+
+- **On-Together_BetterFishing**
+  - 功能：单击跳过钓鱼小游戏；随机化鱼的大小（奖励相应调整）；增加钓鱼杆投掷距离。
+
+- **ShowYourFish**
+  - 功能：捕获的鱼不会自动放生，可展示给其他玩家，期间可以移动或吹泡泡。
+
+- **SpectatorMod**
+  - 功能：按 `F6` 进入/退出旁观者模式（灵魂出窍）。
+  - 操作：`C` 上升，`Shift` 下降，按住 `Ctrl` 加速。
+
+- **PianoMidiMod**
+  - 功能：支持通过外接 MIDI 设备演奏游戏内乐器，支持多个八度。
+  - 依赖：需要先安装 `MidiJackPlugin`（放到游戏根目录）。
+
+- **MidiJackPlugin**
+  - 说明：`PianoMidiMod` 的前置插件，需放置于游戏根目录以使 MIDI 功能正常工作。
+
+- **On-Together_sodaRush**
+  - 功能：支持按 `Shift` 的“火影跑”移动效果，可与其它移动模组叠加使用。
+
+- **officerballs.MoveTweaks**
+  - 功能：`Shift` 加速移动；添加冲刺和潜行键（`Shift+Control`）；按住鼠标中键可旋转人物；使泡泡糖持续时间无限且使用时不消耗。
+
+- **MoveWhenTask**
+  - 功能：解除玩家在专注状态下的移动限制，支持专注时通过方向键自由移动，可浮空、可穿墙；操作：`Shift+↓` 下降，`Shift+↑` 上升。
+
+- **ChatKeepMod & chat_viewer.html**
+  - **ChatKeepMod**：将玩家所在房间内的聊天消息保存到本地。
+  - **chat_viewer.html**：位于 `自用mod/`，用于解析保存的聊天记录并提供直观的展示界面。
+
+> ⚠️ 提示：这些模组为个人自用与测试用途，仅供参考。请勿在违反游戏条款或破坏他人游戏体验的情况下使用。
+
+
