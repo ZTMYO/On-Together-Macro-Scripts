@@ -13,15 +13,15 @@ last_grid_top_left = None
 macro_stop_event = threading.Event()
 
 SUDOKU_PUZZLE =[
-[0,9,0,4,1,0,2,0,0],
-[3,0,0,2,0,0,0,7,8],
-[4,2,5,0,0,6,0,0,0],
-[2,0,0,0,6,0,7,4,0],
-[5,0,0,3,0,1,0,0,9],
-[0,6,1,0,2,0,0,0,5],
-[0,0,0,8,0,0,9,6,7],
-[6,8,0,0,0,7,0,0,4],
-[0,0,4,0,3,5,0,1,0]
+    [6, 0, 4, 5, 0, 0, 3, 0, 0],
+    [0, 0, 0, 0, 0, 6, 5, 8, 4],
+    [0, 3, 0, 7, 9, 0, 0, 0, 2],
+    [4, 2, 0, 0, 1, 0, 7, 0, 0],
+    [0, 0, 7, 2, 0, 9, 8, 0, 0],
+    [0, 0, 1, 0, 4, 0, 0, 5, 3],
+    [8, 0, 0, 0, 2, 3, 0, 1, 0],
+    [1, 7, 3, 4, 0, 0, 0, 0, 0],
+    [0, 0, 9, 0, 0, 1, 6, 0, 5]
 ]
 
 def draw_line(x1, y1, x2, y2, hold_time=0.02):
@@ -31,7 +31,7 @@ def draw_line(x1, y1, x2, y2, hold_time=0.02):
 
     # 移动到起点
     mouse_controller.position = (x1, y1)
-    time.sleep(0.01)
+    time.sleep(0.02)
 
     # 按下左键
     mouse_controller.press(mouse.Button.left)
@@ -43,7 +43,7 @@ def draw_line(x1, y1, x2, y2, hold_time=0.02):
 
     # 松开左键
     mouse_controller.release(mouse.Button.left)
-    time.sleep(0.01)
+    time.sleep(0.02)
 
 
 def draw_grid(top_left_x, top_left_y):
