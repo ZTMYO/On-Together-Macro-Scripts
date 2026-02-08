@@ -345,6 +345,34 @@
             </div>
 
             <div class="panel-section">
+                <div class="panel-title">改色</div>
+                <div class="panel-row">
+                    <label style="font-size: 12px;">从:</label>
+                    <select id="replaceFromColor" style="padding: 3px 6px; font-size: 12px;">
+                        <option value="0">橡皮</option>
+                        <option value="1">白色</option>
+                        <option value="2">橙色</option>
+                        <option value="3">红色</option>
+                        <option value="4">绿色</option>
+                        <option value="5">蓝色</option>
+                    </select>
+                    <label style="font-size: 12px; margin-left: 8px;">到:</label>
+                    <select id="replaceToColor" style="padding: 3px 6px; font-size: 12px;">
+                        <option value="0">橡皮</option>
+                        <option value="1">白色</option>
+                        <option value="2">橙色</option>
+                        <option value="3">红色</option>
+                        <option value="4">绿色</option>
+                        <option value="5">蓝色</option>
+                    </select>
+                    <button id="replaceColorBtn" class="btn" title="替换色彩"
+                        style="display:flex;align-items:center;gap:4px;margin-left:4px;">
+                        替换
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel-section">
                 <div class="panel-title">图片容差</div>
                 <div class="panel-row">
                     <input type="range" id="toleranceRange" min="0" max="442" value="100" />
@@ -405,6 +433,11 @@
 
         const palette = document.getElementById("palette");
         const info = document.getElementById("info");
+
+        // 改色相关
+        const replaceColorBtn = document.getElementById("replaceColorBtn");
+        const replaceFromColor = document.getElementById("replaceFromColor");
+        const replaceToColor = document.getElementById("replaceToColor");
 
         // 容差设置（RGB 距离阈值）
         let tolerance = 100;
@@ -779,6 +812,36 @@
             Array.from(palette.querySelectorAll("button[data-color]"))
                 .forEach(b => b.classList.toggle("active", b === btn));
         });
+
+        // 改色功能：替换整张图上的指定颜色
+        function replaceColor(fromColorIndex, toColorIndex) {
+            if (fromColorIndex === toColorIndex) {
+                info.textContent = "替换颜色相同，无需操作";
+                return;
+            }
+
+            pushHistory();
+            let count = 0;
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    if (grid[x][y] === fromColorIndex) {
+                        grid[x][y] = toColorIndex;
+                        count++;
+                    }
+                }
+            }
+            drawAll();
+            info.textContent = `已将 ${count} 个像素点从指定颜色替换`;
+        }
+
+        // 替换按钮点击事件
+        if (replaceColorBtn) {
+            replaceColorBtn.addEventListener("click", () => {
+                const fromIdx = parseInt(replaceFromColor.value, 10);
+                const toIdx = parseInt(replaceToColor.value, 10);
+                replaceColor(fromIdx, toIdx);
+            });
+        }
 
         // 颜色距离计算（RGB欧几里得距离）
         function colorDistance(r1, g1, b1, r2, g2, b2) {
